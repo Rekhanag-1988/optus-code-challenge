@@ -1,0 +1,26 @@
+FROM python:3.10-slim
+ENV PYTHONUNBUFFERED True
+ENV APP_HOME /app
+WORKDIR $APP_HOME
+
+RUN apt-get update && \
+    apt-get install -yq tzdata && \
+    ln -fs /usr/share/zoneinfo/America/New_York /etc/localtime && \
+    dpkg-reconfigure -f noninteractive tzdata
+RUN apt-get update && \
+  apt-get install -y \
+    ca-certificates \
+    apt-utils \
+    tzdata \
+    curl \
+    wget \
+    build-essential \
+    ansible \
+    jq
+
+COPY pretend_bom ./
+COPY requirements.txt ./
+
+RUN pip install --no-cache-dir -r requirements.txt
+
+CMD exec uvicorn main:app --reload --host 0.0.0.0 --port 8080
